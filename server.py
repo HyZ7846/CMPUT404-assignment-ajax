@@ -78,15 +78,11 @@ def hello():
 
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
-    '''Update the given entity with data from the request body.'''
-    data = flask_post_json()
-    if data is None:
-        return json.dumps({'success': False, 'message': 'Invalid or empty request body'})
-    elif not isinstance(data, dict):
-        return json.dumps({'success': False, 'message': 'Request body must be a JSON object'})
-    else:
-        myWorld.update(entity, **data)
-        return json.dumps({'success': True, 'entity': myWorld.get(entity)})
+    '''update the entities via this interface'''
+    for k, v in flask_post_json().items():
+        myWorld.update(entity, k, v)
+
+    return myWorld.get(entity)
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
@@ -105,18 +101,14 @@ def world():
 @app.route("/entity/<entity>")    
 def get_entity(entity):
     '''This is the GET version of the entity interface, return a representation of the entity'''
-    data = myWorld.get(entity)
-    return f"{data}"
+    return myWorld.get(entity)
 
 @app.route("/clear", methods=['POST','GET'])
 def clear():
-    if request.method == 'POST':
-        # Clear the world state
-        myWorld.clear()
-        return "200 OK"
-    elif request.method == 'GET':
-        # Return a confirmation message
-        return "The world has been cleared."
+    '''Clear the world out!'''
+    myWorld.clear()
+
+    return myWorld.world()
 
 if __name__ == "__main__":
     app.run()
